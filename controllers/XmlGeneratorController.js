@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { create } = require('xmlbuilder2');
 const calendar = require('node-calendar'); // for month names
+const R = require('../xml/constants.js');
+const C = require('../xml/stringLiterals.js');
+const { basicList } = require('../xml/basics_constants.js');
 
 // SAF-T Generator Controller
 const generateSaftXml = async (req, res) => {
@@ -33,58 +36,58 @@ const generateSaftXml = async (req, res) => {
         .ele('d1:fiscalYear').txt(fiscalYear).up()
         .ele('d1:startDate').txt(`${year}-01-01`).up()
         .ele('d1:endDate').txt(`${year}-12-31`).up()
-        .ele('d1:curCode').txt('DKK').up()
+        .ele('d1:curCode').txt(C.currCodeLabel).up()
         .ele('d1:dateCreated').txt(dateCreated).up()
         .ele('d1:timeCreated').txt(timeCreated).up()
-        .ele('d1:softwareDesc').txt('ExamplePOS SAF-T Generator').up()
-        .ele('d1:softwareVersion').txt('1.0').up()
-        .ele('d1:softwareCompanyName').txt('Example POS Vendor A/S').up()
+        .ele('d1:softwareDesc').txt(C.softwareCompanyDescLabel).up()
+        .ele('d1:softwareVersion').txt(C.softwareVersionLabel).up()
+        .ele('d1:softwareCompanyName').txt(C.softwareCompanyNameLabel).up()
         .ele('d1:auditfileVersion').txt('1.2.1').up()
         .ele('d1:auditfileSender') // Section 2.3
-          .ele('d1:companyIdent').txt('99999999').up()
-          .ele('d1:companyName').txt('Example POS Vendor A/S').up()
-          .ele('d1:taxRegistrationCountry').txt('DK').up()
-          .ele('d1:taxRegIdent').txt('99999999').up()
+          .ele('d1:companyIdent').txt(C.companyCVRLabel).up()
+          .ele('d1:companyName').txt(C.companyNameLabel).up()
+          .ele('d1:taxRegistrationCountry').txt(C.taxRegistrationCountryLabel).up()
+          .ele('d1:taxRegIdent').txt(C.companyCVRLabel).up()
           .ele('d1:streetAddress') // Section 2.4
-            .ele('d1:streetname').txt('Vendorvej').up()
-            .ele('d1:number').txt('1').up()
-            .ele('d1:city').txt('København').up()
-            .ele('d1:postalCode').txt('1111').up()
-            .ele('d1:country').txt('DK').up()
+            .ele('d1:streetname').txt('Nørregade').up()
+            .ele('d1:number').txt('38').up()
+            .ele('d1:city').txt(C.companyCityLabel).up()
+            .ele('d1:postalCode').txt(C.companyPincodeLabel).up()
+            .ele('d1:country').txt(C.companyCountryLabel).up()
           .up()
         .up()
       .up(); // Close header
 
     // ===== COMPANY (Section 3.1) =====
     const company = doc.ele('d1:company')
-      .ele('d1:companyIdent').txt('99999999').up()
-      .ele('d1:companyName').txt('Selskabet ApS').up()
-      .ele('d1:taxRegistrationCountry').txt('DK').up()
-      .ele('d1:taxRegIdent').txt('99999999').up()
+      .ele('d1:companyIdent').txt(C.companyCVRLabel).up()
+      .ele('d1:companyName').txt(C.companyNameLabel).up()
+      .ele('d1:taxRegistrationCountry').txt(C.taxRegistrationCountryLabel).up()
+      .ele('d1:taxRegIdent').txt(C.companyCVRLabel).up()
       .ele('d1:streetAddress') // Section 3.2
-        .ele('d1:streetname').txt('Vejen').up()
-        .ele('d1:number').txt('13').up()
-        .ele('d1:city').txt('Nørreby').up()
-        .ele('d1:postalCode').txt('7913').up()
-        .ele('d1:country').txt('DK').up()
+        .ele('d1:streetname').txt('Nørregade').up()
+        .ele('d1:number').txt('38').up()
+        .ele('d1:city').txt(C.companyCityLabel).up()
+        .ele('d1:postalCode').txt(C.companyPincodeLabel).up()
+        .ele('d1:country').txt(C.companyCountryLabel).up()
       .up()
       .ele('d1:postalAddress') // Section 3.3
-        .ele('d1:streetname').txt('Vejen').up()
-        .ele('d1:number').txt('13').up()
-        .ele('d1:city').txt('Nørreby').up()
-        .ele('d1:postalCode').txt('7913').up()
-        .ele('d1:country').txt('DK').up()
+        .ele('d1:streetname').txt('Nørregade').up()
+        .ele('d1:number').txt('38').up()
+        .ele('d1:city').txt(C.companyCityLabel).up()
+        .ele('d1:postalCode').txt(C.companyPincodeLabel).up()
+        .ele('d1:country').txt(C.companyCountryLabel).up()
       .up()
       .ele('d1:vatCodeDetails') // Section 3.10
         .ele('d1:vatCodeDetail') // Section 3.11
           .ele('d1:vatCode').txt('1').up()
-          .ele('d1:dateOfEntry').txt('2020-01-01').up()
+          .ele('d1:dateOfEntry').txt(`${year}-01-01`).up()
           .ele('d1:vatDesc').txt('Salgsmoms varer og ydelser, 25 %').up()
           .ele('d1:standardVatCode').txt('1').up()
         .up()
         .ele('d1:vatCodeDetail')
           .ele('d1:vatCode').txt('0').up()
-          .ele('d1:dateOfEntry').txt('2020-01-01').up()
+          .ele('d1:dateOfEntry').txt(`${year}-01-01`).up()
           .ele('d1:vatDesc').txt('Salg fritaget moms, 0 %').up()
           .ele('d1:standardVatCode').txt('2').up()
         .up()
@@ -108,79 +111,76 @@ const generateSaftXml = async (req, res) => {
     }
 
     // Continue the chaining from the company element
-    company.ele('d1:employees') // Section 3.14
-      .ele('d1:employee') // Section 3.15
-        .ele('d1:empID').txt('1003').up()
-        .ele('d1:dateOfEntry').txt('2020-01-08').up()
-        .ele('d1:timeOfEntry').txt('08:00:00').up()
-        .ele('d1:firstName').txt('Jens').up()
-        .ele('d1:surName').txt('Hansen').up()
-        .ele('d1:employeeRole') // Section 3.16
-          .ele('d1:roleType').txt('Manager').up()
-          .ele('d1:roleTypeDesc').txt('Butikschef').up()
+    // Employees, Articles, Basics from xml folder
+    const employees = company.ele('d1:employees');
+    // Example: You can loop through an array of employees if available
+    // For now, just a placeholder
+    employees.ele('d1:employee')
+      .ele('d1:empID').txt('1003').up()
+      .ele('d1:dateOfEntry').txt('2020-01-08').up()
+      .ele('d1:timeOfEntry').txt('08:00:00').up()
+      .ele('d1:firstName').txt('Jens').up()
+      .ele('d1:surName').txt('Hansen').up()
+      .ele('d1:employeeRole') // Section 3.16
+        .ele('d1:roleType').txt('Manager').up()
+        .ele('d1:roleTypeDesc').txt('Butikschef').up()
+      .up()
+    .up();
+
+    // Articles placeholder (should be dynamic if you have articles data)
+    const articles = company.ele('d1:articles');
+    articles.ele('d1:article')
+      .ele('d1:artID').txt('22654').up()
+      .ele('d1:dateOfEntry').txt('2019-01-08').up()
+      .ele('d1:artGroupID').txt('100').up()
+      .ele('d1:artDesc').txt('Mørkt rugbrød, 750 g').up()
+    .up();
+
+    // Basics from xml/basics_constants.js
+    const basics = company.ele('d1:basics');
+    basicList.forEach(basic => {
+      basics.ele('d1:basic')
+        .ele('d1:basicType').txt(basic[R.basicTypeLabel]).up()
+        .ele('d1:basicID').txt(basic[R.basicIDLabel]).up()
+        .ele('d1:predefinedBasicID').txt(basic[R.predefinedBasicIDLabel]).up()
+        .ele('d1:basicDesc').txt(basic[R.basicDescLabel]).up()
+      .up();
+    });
+
+    // Continue chaining after basics
+    company
+      .ele('d1:customersSuppliers') // Section 3.4
+        .ele('d1:customerSupplier') // Section 3.5
+          .ele('d1:custSupID').txt('100').up()
+          .ele('d1:custSupName').txt('Kunden ApS').up()
+          .ele('d1:custSupType').txt('Customer').up()
+          .ele('d1:taxRegistrationCountry').txt('DK').up()
+          .ele('d1:taxRegIdent').txt('88888888').up()
         .up()
       .up()
-    .up()
-    .ele('d1:articles') // Section 3.17
-      .ele('d1:article') // Section 3.18
-        .ele('d1:artID').txt('22654').up()
-        .ele('d1:dateOfEntry').txt('2019-01-08').up()
-        .ele('d1:artGroupID').txt('100').up()
-        .ele('d1:artDesc').txt('Mørkt rugbrød, 750 g').up()
-      .up()
-    .up()
-    .ele('d1:basics') // Section 3.19
-      .ele('d1:basic') // Section 3.20
-        .ele('d1:basicType').txt('11').up()
-        .ele('d1:basicID').txt('CASHSAL').up()
-        .ele('d1:predefinedBasicID').txt('11001').up()
-        .ele('d1:basicDesc').txt('Kontantsalg').up()
-      .up()
-      .ele('d1:basic')
-        .ele('d1:basicType').txt('12').up()
-        .ele('d1:basicID').txt('Cash').up()
-        .ele('d1:predefinedBasicID').txt('12001').up()
-        .ele('d1:basicDesc').txt('Kontant betaling').up()
-      .up()
-      .ele('d1:basic')
-        .ele('d1:basicType').txt('13').up()
-        .ele('d1:basicID').txt('DRAWOPEN').up()
-        .ele('d1:predefinedBasicID').txt('13001').up()
-        .ele('d1:basicDesc').txt('Åbning af pengeskuffe').up()
-      .up()
-    .up()
-    .ele('d1:customersSuppliers') // Section 3.4
-      .ele('d1:customerSupplier') // Section 3.5
-        .ele('d1:custSupID').txt('100').up()
-        .ele('d1:custSupName').txt('Kunden ApS').up()
-        .ele('d1:custSupType').txt('Customer').up()
-        .ele('d1:taxRegistrationCountry').txt('DK').up()
-        .ele('d1:taxRegIdent').txt('88888888').up()
-      .up()
-    .up()
-    .ele('d1:locations') // Section 4.1
-      .ele('d1:location')
-        .ele('d1:locID').txt('LOC-001').up()
-        .ele('d1:locDesc').txt('Butik - Nørreby').up()
-        .ele('d1:cashregisters') // Section 4.3
-          .ele('d1:cashregister')
-            .ele('d1:regID').txt('123.45678-A').up()
-            .ele('d1:regDesc').txt('Ved indgangen til butikken.').up()
-            // ===== EVENT (Section 5.1) =====
-            .ele('d1:event')
-              .ele('d1:eventID').txt('500').up()
-              .ele('d1:eventType').txt('DRAWOPEN').up()
-              .ele('d1:empID').txt('1003').up()
-              .ele('d1:eventDate').txt(`${year}-01-10`).up()
-              .ele('d1:eventTime').txt('10:13:45').up()
-              .ele('d1:eventReport') // Section 5.2 (Mandatory if `eventType` is `13008` or `13009`)
-                .ele('d1:reportID').txt('123').up()
-                .ele('d1:reportType').txt('Z report').up()
-                .ele('d1:companyIdent').txt('99999999').up()
-                .ele('d1:companyName').txt('Selskabet ApS').up()
-                .ele('d1:reportDate').txt(`${year}-01-10`).up()
-                .ele('d1:reportTime').txt('23:58:10').up()
-                .ele('d1:registerID').txt('123.45678-A').up()
+      .ele('d1:locations') // Section 4.1
+        .ele('d1:location')
+          .ele('d1:locID').txt('LOC-001').up()
+          .ele('d1:locDesc').txt('Butik - Nørreby').up()
+          .ele('d1:cashregisters') // Section 4.3
+            .ele('d1:cashregister')
+              .ele('d1:regID').txt('123.45678-A').up()
+              .ele('d1:regDesc').txt('Ved indgangen til butikken.').up()
+              // ===== EVENT (Section 5.1) =====
+              .ele('d1:event')
+                .ele('d1:eventID').txt('500').up()
+                .ele('d1:eventType').txt('DRAWOPEN').up()
+                .ele('d1:empID').txt('1003').up()
+                .ele('d1:eventDate').txt(`${year}-01-10`).up()
+                .ele('d1:eventTime').txt('10:13:45').up()
+                .ele('d1:eventReport') // Section 5.2 (Mandatory if `eventType` is `13008` or `13009`)
+                  .ele('d1:reportID').txt('123').up()
+                  .ele('d1:reportType').txt('Z report').up()
+                  .ele('d1:companyIdent').txt('99999999').up()
+                  .ele('d1:companyName').txt('Selskabet ApS').up()
+                  .ele('d1:reportDate').txt(`${year}-01-10`).up()
+                  .ele('d1:reportTime').txt('23:58:10').up()
+                  .ele('d1:registerID').txt('123.45678-A').up()
                 .ele('d1:reportTotalCashSales') // Section 5.3
                   .ele('d1:totalCashSaleAmnt').txt('1000.00').up()
                   .ele('d1:accID').txt('1010').up()

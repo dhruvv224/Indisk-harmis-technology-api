@@ -787,9 +787,18 @@ const vivaPaymentWebhookGET = async (req, res) => {
   res.status(200).json({ key: verificationKey });
 }
 const vivaPaymentWebhookPOST = async (req, res) => {
-  console.log("vivaPaymentWebhook full response",req);
-  console.log("vivaPaymentWebhook body",req.body);
-  res.status(200).json({ message: 'ok' });
+  console.log("vivaPaymentWebhook received at:", new Date().toISOString());
+  console.log("vivaPaymentWebhook headers:", req.headers);
+  console.log("vivaPaymentWebhook body:", req.body);
+  
+  try {
+    // Add your webhook processing logic here
+    
+    res.status(200).json({ message: 'Webhook processed successfully' });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ message: 'Webhook processing failed', error: error.message });
+  }
 }
 const vivaTerminalPayment = async (req, res) => {
   const { terminal_id, table_no, order_id } = req.body;

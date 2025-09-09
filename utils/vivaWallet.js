@@ -29,8 +29,8 @@ const createVivaOrder = async (amount, description, reference) => {
         amount: 1000,
         customerTrns: description,
         reference,
-        successUrl: "https://indisk-app.harmistechnology.com/payment-success",
-        failureUrl: "https://indisk-app.harmistechnology.com/payment-failure",
+        successUrl: process.env.BASE_URL + "/payment-success",
+        failureUrl: process.env.BASE_URL + "/payment-failure",
       },
       {
         headers: {
