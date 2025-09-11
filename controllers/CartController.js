@@ -470,16 +470,19 @@ const placeOrder = async (req, res) => {
     cart.items = [];
     await cart.save();
 
-    return res.status(200).json({
-      success: true,
-      message: isNewOrder
-        ? "Order placed successfully"
-        : "Order updated successfully",
-      order,
-    });
+      // For demonstration, payment_status is set to 'success'.
+      // In real payment integration, set this based on actual payment result.
+      return res.status(200).json({
+        success: true,
+        message: isNewOrder
+          ? "Order placed successfully"
+          : "Order updated successfully",
+        order,
+        payment_status: "success" // or "failed" if payment fails
+      });
   } catch (err) {
     console.error("placeOrder error:", err);
-    return res.status(500).json({ success: false, message: err.message });
+  return res.status(500).json({ success: false, message: err.message, payment_status: "failed" });
   }
 };
 
@@ -886,7 +889,12 @@ const vivaTerminalPayment = async (req, res) => {
     );
 
     if (transactionResponse.status === 200) {
-      console.log("Transaction Response:", transactionResponse.data);
+      // Ensure transactionResponse.data is logged as a string for visibility
+      try {
+        console.log("Transaction Response:", JSON.stringify(transactionResponse.data, null, 2));
+      } catch (e) {
+        console.log("Transaction Response:", transactionResponse.data);
+      }
       const actionId = transactionResponse.data.actionId;
       console.log("Transaction started. Action ID:", actionId);
       console.log('Request For Payment Successful to Viva Payments terminal.');
@@ -895,6 +903,7 @@ const vivaTerminalPayment = async (req, res) => {
         data: transactionResponse.data,
         checkoutUrl: "",
         orderCode: "",
+        payment_status: "success"
       });
     } else {
       console.log('Error making payment, status is not 200.');
@@ -902,6 +911,7 @@ const vivaTerminalPayment = async (req, res) => {
       return res.status(400).json({
         message: 'Transaction failed',
         error: transactionResponse.data,
+        payment_status: "failed"
       });
     }
 

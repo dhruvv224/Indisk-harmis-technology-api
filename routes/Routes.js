@@ -1,3 +1,6 @@
+const { saveTerminalId, getTerminalId } = require("../controllers/TerminalController");
+// Terminal ID APIs
+
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -13,7 +16,6 @@ const {
   getProfile,
   editProfile,
 } = require("../controllers/AuthLoginController");
-
 const {
   getManager,
   createStaffManager,
@@ -195,5 +197,6 @@ router.get("/viva/webhook", vivaPaymentWebhookGET);
 
 // XML Generation route
 router.get("/generate-xml", generateSaftXml);
-
+router.post("/terminal-id", saveTerminalId);
+router.get("/terminal-id", getTerminalId);
 module.exports = router;
