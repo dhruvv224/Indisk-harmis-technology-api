@@ -889,6 +889,7 @@ const vivaTerminalPayment = async (req, res) => {
     );
 
     if (transactionResponse.status === 200) {
+      console.log(transactionResponse,":::ressponse is here <<<<")
       // Ensure transactionResponse.data is logged as a string for visibility
       try {
         console.log("Transaction Response:", JSON.stringify(transactionResponse.data, null, 2));
