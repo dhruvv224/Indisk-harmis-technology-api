@@ -87,7 +87,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password, role } = req.body;
-
+console.log("hello this api is being called",email,password,role);
     if (!email || !password || !role) {
       return res.status(400).json({
         message: "Email, password, and role are required",
