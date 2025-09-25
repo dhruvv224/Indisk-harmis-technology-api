@@ -837,7 +837,8 @@ const vivaTerminalPayment = async (req, res) => {
       query.status = { $in: ["Delivered"] };
     }
     const activeOrder = await OrderModel.find(query);
-
+const allOrders=await OrderModel.find({});
+console.log(allOrders,"::::all orders here")
     if(!activeOrder || activeOrder.length === 0) {
       return res.status(400).json({
         success: false,
@@ -889,7 +890,7 @@ const vivaTerminalPayment = async (req, res) => {
     );
 
     if (transactionResponse.status === 200) {
-      console.log(transactionResponse,":::ressponse is here <<<<")
+      console.log(":::ressponse is here <<<<", transactionResponse);
       // Ensure transactionResponse.data is logged as a string for visibility
       try {
         console.log("Transaction Response:", JSON.stringify(transactionResponse.data, null, 2));

@@ -196,7 +196,7 @@ router.post("/viva/webhook", upload.none(), vivaPaymentWebhookPOST);
 router.get("/viva/webhook", vivaPaymentWebhookGET);
 
 // XML Generation route
-router.get("/generate-xml", generateSaftXml);
+router.post("/generate-xml", generateSaftXml);
 router.post("/terminal-id", saveTerminalId);
 router.get("/terminal-id", getTerminalId);
 module.exports = router;
