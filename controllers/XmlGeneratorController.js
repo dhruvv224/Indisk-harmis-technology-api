@@ -1,13 +1,22 @@
+const Order = require("../models/Order");
+const Restaurant = require("../models/RestaurantCreate");
+const { create } = require("xmlbuilder2");
+
 const generateSaftXml = async (req, res) => {
   try {
     const { managerId, startDate, endDate } = req.body;
 
     // fetch orders + restaurant
-    const orders = await Order.find({
-      manager_id: managerId,
-      order_date: { $gte: new Date(startDate), $lte: new Date(endDate) },
-    });
-    const restaurant = await Restaurant.findOne({ manager_id: managerId });
+const orders = await Order.find({
+  manager_id: managerId,
+  order_date: { $gte: new Date(startDate), $lte: new Date(endDate) },
+});
+
+const restaurant = await Restaurant.findOne({
+  manager_id: managerId,
+  created_at: { $gte: new Date(startDate), $lte: new Date(endDate) }, // change to actual field name
+});
+console.log(":orders", orders, ":restaurant", restaurant);
 
     if (!orders.length) return res.status(404).json({ message: "No orders" });
     if (!restaurant) return res.status(404).json({ message: "No restaurant" });
@@ -46,22 +55,22 @@ const generateSaftXml = async (req, res) => {
           },
 
           streetAddress: {
-            streetname: restaurant.streetname,
-            number: restaurant.number,
-            building: restaurant.building,
-            additionalAddressDetails: restaurant.additional || "",
-            city: restaurant.city,
-            postalCode: restaurant.postalCode,
+            streetname: restaurant?.streetname,
+            number: restaurant?.phone,
+            building: restaurant?.building,
+            additionalAddressDetails: restaurant?.additional || "",
+            city: restaurant?.city,
+            postalCode: restaurant?.postalCode,
             country: restaurant.country,
           },
 
           postalAddress: {
-            streetname: restaurant.streetname,
-            number: restaurant.number,
-            building: restaurant.building,
-            additionalAddressDetails: restaurant.additional || "",
-            city: restaurant.city,
-            postalCode: restaurant.postalCode,
+            streetname: restaurant?.streetname,
+            number: restaurant?.number,
+            building: restaurant?.building,
+            additionalAddressDetails: restaurant?.additional || "",
+            city: restaurant?.city,
+            postalCode: restaurant?.postalCode,
             country: restaurant.country,
           },
 
@@ -75,7 +84,7 @@ const generateSaftXml = async (req, res) => {
           },
 
           employees: {
-            employee: restaurant.employees.map(emp => ({
+            employee: restaurant?.employees?.map(emp => ({
               empID: emp._id.toString(),
               dateOfEntry: emp.dateOfEntry,
               timeOfEntry: emp.timeOfEntry,
@@ -89,7 +98,7 @@ const generateSaftXml = async (req, res) => {
           },
 
           articles: {
-            article: restaurant.articles.map(a => ({
+            article: restaurant?.articles?.map(a => ({
               artID: a.id,
               dateOfEntry: a.dateOfEntry,
               artGroupID: a.groupId,
@@ -106,15 +115,15 @@ const generateSaftXml = async (req, res) => {
 
           locations: {
             location: {
-              name: restaurant.name,
+              name: restaurant?.name,
               streetAddress: {
-                streetname: restaurant.streetname,
-                number: restaurant.number,
-                building: restaurant.building,
-                additionalAddressDetails: restaurant.additional || "",
-                city: restaurant.city,
-                postalCode: restaurant.postalCode,
-                country: restaurant.country,
+                streetname: restaurant?.streetname,
+                number: restaurant?.phone,
+                building: restaurant?.building,
+                additionalAddressDetails: restaurant?.additional || "",
+                city: restaurant?.city,
+                postalCode: restaurant?.postalCode,
+                country: restaurant?.country,
               },
               cashregister: {
                 registerID: "123.45678-A",
@@ -174,13 +183,16 @@ const generateSaftXml = async (req, res) => {
         },
       },
     };
-
     const xml = create(xmlObj).end({ prettyPrint: true });
 
+    // 👇 Force browser to download as file
     res.setHeader("Content-Type", "application/xml");
+    res.setHeader("Content-Disposition", "attachment; filename=saft-report.xml");
     res.send(xml);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed", error: err.message });
   }
 };
+module.exports = { generateSaftXml };

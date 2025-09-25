@@ -86,7 +86,7 @@ const getCart = async (req, res) => {
       }
 
       priceWithAddons = +priceWithAddons.toFixed(2);
-      const totalPrice = priceWithAddons * item.quantity;
+      const totalPrice = priceWithAddons * item.quantity ;
 
       return {
         food_item_id: food._id,
@@ -595,6 +595,8 @@ const getTableBill = async (req, res) => {
 
     orders.forEach((order) => {
       order_id = order?._id || "";
+      console.log(order,":::")
+      const tip_amount = order?.tip_amount || 0;
       order.items.forEach((item) => {
         const basePrice = item.food_item?.base_price || 0;
         const quantity = item.quantity;
@@ -610,7 +612,7 @@ const getTableBill = async (req, res) => {
 
         // Final Price Per Quantity
         const finalUnitPrice = basePrice + variantTotal + modifierTotal + topupTotal - discountAmount;
-        const totalPrice = finalUnitPrice * quantity;
+        const totalPrice = finalUnitPrice * quantity+ tip_amount;
 
         // Push detailed bill item
         items.push({

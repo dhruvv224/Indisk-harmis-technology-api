@@ -1,24 +1,34 @@
 const Terminal = require('../models/Terminal');
 
-// POST: Save terminal ID
+// POST: Save terminal ID for a manager (only if it doesn't exist)
 const saveTerminalId = async (req, res) => {
   try {
-    const { terminal_id } = req.body;
-    if (!terminal_id) {
+    const { terminal_id, manager_id } = req.body;
+    if (!terminal_id || !manager_id) {
       return res.status(400).json({
         status: false,
-        message: 'terminal_id is required'
+        message: 'terminal_id and manager_id are required'
       });
     }
-    let terminal = await Terminal.findOne({ terminal_id });
-    if (!terminal) {
-      terminal = new Terminal({ terminal_id });
-      await terminal.save();
+
+    // Check if a terminal for this manager already exists
+    const existing = await Terminal.findOne({ manager_id });
+    if (existing) {
+      return res.status(400).json({
+        status: false,
+        message: 'Terminal already exists for this manager',
+        terminal_id: existing.terminal_id
+      });
     }
+
+    // Save new terminal
+    const terminal = new Terminal({ terminal_id, manager_id });
+    await terminal.save();
+
     return res.status(200).json({
       status: true,
       message: 'Terminal ID saved successfully',
-      terminal_id
+      terminal_id: terminal.terminal_id
     });
   } catch (err) {
     return res.status(500).json({
@@ -29,16 +39,27 @@ const saveTerminalId = async (req, res) => {
   }
 };
 
-// GET: Return terminal ID
+// GET: Return terminal ID for a manager
 const getTerminalId = async (req, res) => {
   try {
-    const terminal = await Terminal.findOne();
+    const { manager_id } = req.query;
+    if (!manager_id) {
+      return res.status(400).json({
+        status: false,
+        message: 'manager_id is required'
+      });
+    }
+
+    // Fetch terminal for this manager
+    const terminal = await Terminal.findOne({ manager_id });
+    console.log(terminal, ":::");
     if (!terminal) {
       return res.status(404).json({
         status: false,
-        message: 'No terminal ID found'
+        message: 'No terminal ID found for this manager'
       });
     }
+
     return res.status(200).json({
       status: true,
       terminal_id: terminal.terminal_id
@@ -51,14 +72,6 @@ const getTerminalId = async (req, res) => {
     });
   }
 };
-const Table = require("../models/Table");
-const mongoose = require("mongoose");
-const Manager = require("../models/manager");
-const OrderModel = require("../models/Order");
-const StaffData = require("../models/staff");
-const dayjs = require("dayjs");
-const relativeTime = require("dayjs/plugin/relativeTime");
-dayjs.extend(relativeTime);
 
 module.exports = {
   saveTerminalId,

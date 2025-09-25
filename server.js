@@ -31,35 +31,35 @@ const cache = new NodeCache();
 let savedTerminalId = null;
 
 // POST /api/terminal-id: Save terminal ID
-app.post("/api/terminal-id", (req, res) => {
-  const { terminal_id } = req.body;
-  if (!terminal_id) {
-    return res.status(400).json({
-      status: "failure",
-      message: "terminal_id is required"
-    });
-  }
-  savedTerminalId = terminal_id;
-  return res.status(200).json({
-    status: "success",
-    message: "Terminal ID saved successfully",
-    terminal_id
-  });
-});
+// app.post("/api/terminal-id", (req, res) => {
+//   const { terminal_id } = req.body;
+//   if (!terminal_id) {
+//     return res.status(400).json({
+//       status: "failure",
+//       message: "terminal_id is required"
+//     });
+//   }
+//   savedTerminalId = terminal_id;
+//   return res.status(200).json({
+//     status: "success",
+//     message: "Terminal ID saved successfully",
+//     terminal_id
+//   });
+// });
 
 // GET /api/terminal-id: Get saved terminal ID
-app.get("/api/terminal-id", (req, res) => {
-  if (!savedTerminalId) {
-    return res.status(404).json({
-      status: "failure",
-      message: "No terminal ID found"
-    });
-  }
-  return res.status(200).json({
-    status: "success",
-    terminal_id: savedTerminalId
-  });
-});
+// app.get("/api/terminal-id", (req, res) => {
+//   if (!savedTerminalId) {
+//     return res.status(404).json({
+//       status: "failure",
+//       message: "No terminal ID found"
+//     });
+//   }
+//   return res.status(200).json({
+//     status: "success",
+//     terminal_id: savedTerminalId
+//   });
+// });
 
 app.delete("/api/cache/clear", (req, res) => {
   cache.flushAll();

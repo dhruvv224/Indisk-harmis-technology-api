@@ -72,6 +72,7 @@ const {
 
 const { getOwnerHome } = require("../controllers/OwnerHomeController");
 const { generateSaftXml } = require("../controllers/XmlGeneratorController");
+const { addTipToOrder } = require("../controllers/TipController");
 const {
   getCart,
   addToCart,
@@ -199,4 +200,5 @@ router.get("/viva/webhook", vivaPaymentWebhookGET);
 router.post("/generate-xml", generateSaftXml);
 router.post("/terminal-id", saveTerminalId);
 router.get("/terminal-id", getTerminalId);
+router.post('/add-tip',addTipToOrder)
 module.exports = router;
