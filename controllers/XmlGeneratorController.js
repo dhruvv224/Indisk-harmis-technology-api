@@ -9,7 +9,7 @@ const generateSaftXml = async (req, res) => {
     // fetch orders + restaurant
 const orders = await Order.find({
   manager_id: managerId,
-  order_date: { $gte: new Date(startDate), $lte: new Date(endDate) },
+  created_at: { $gte: new Date(startDate), $lte: new Date(endDate) },
 });
 
 const restaurant = await Restaurant.findOne({

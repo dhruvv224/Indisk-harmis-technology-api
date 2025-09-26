@@ -4,6 +4,7 @@ const Terminal = require('../models/Terminal');
 const saveTerminalId = async (req, res) => {
   try {
     const { terminal_id, manager_id } = req.body;
+
     if (!terminal_id || !manager_id) {
       return res.status(400).json({
         status: false,
@@ -11,23 +12,16 @@ const saveTerminalId = async (req, res) => {
       });
     }
 
-    // Check if a terminal for this manager already exists
-    const existing = await Terminal.findOne({ manager_id });
-    if (existing) {
-      return res.status(400).json({
-        status: false,
-        message: 'Terminal already exists for this manager',
-        terminal_id: existing.terminal_id
-      });
-    }
-
-    // Save new terminal
-    const terminal = new Terminal({ terminal_id, manager_id });
-    await terminal.save();
+    // Update if exists, otherwise insert new
+    const terminal = await Terminal.findOneAndUpdate(
+      { manager_id }, // filter
+      { terminal_id }, // update
+      { new: true, upsert: true } // return updated doc, create if not found
+    );
 
     return res.status(200).json({
       status: true,
-      message: 'Terminal ID saved successfully',
+      message: 'Terminal ID saved/updated successfully',
       terminal_id: terminal.terminal_id
     });
   } catch (err) {
@@ -38,6 +32,7 @@ const saveTerminalId = async (req, res) => {
     });
   }
 };
+
 
 // GET: Return terminal ID for a manager
 const getTerminalId = async (req, res) => {
