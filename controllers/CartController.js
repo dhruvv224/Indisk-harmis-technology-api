@@ -555,66 +555,47 @@ const getTableBill = async (req, res) => {
   try {
     let { table_no, order_id } = req.body;
     let query = {};
-    if(table_no == "Take away order"){
-      if(!order_id){
-        return res.status(400).json({
-          success: false,
-          message: "order_id are required",
-        });
-      }
+
+    if (table_no === "Take away order") {
+      if (!order_id) return res.status(400).json({ success: false, message: "order_id is required" });
       query._id = order_id;
-    }else{
-      if (!table_no) {
-        return res.status(400).json({
-          success: false,
-          message: "table_no are required",
-        });
-      }
-      query = {table_no, payment_status :{$ne:"paid"}}
+    } else {
+      if (!table_no) return res.status(400).json({ success: false, message: "table_no is required" });
+      query = { table_no, payment_status: { $ne: "paid" } };
     }
-    
 
     const orders = await OrderModel.find(query).populate({
-        path: "items.food_item",
-        select: "name base_price", // add other fields if needed
-      });
+      path: "items.food_item",
+      select: "name base_price",
+    });
 
+    if (!orders || orders.length === 0) return res.status(404).json({ success: false, message: "Order not found" });
 
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
     let items = [];
     let total_items = 0;
     let total_sub_total = 0;
     let total_vat = 0;
     let total_amount = 0;
-    
+    let total_tip_amount = 0; // sum of tip_amounts across orders
 
     orders.forEach((order) => {
-      order_id = order?._id || "";
-      console.log(order,":::")
-      const tip_amount = order?.tip_amount || 0;
+      order_id = order._id;
+      total_tip_amount += order.tip_amount || 0; // sum tip for all orders
+
       order.items.forEach((item) => {
         const basePrice = item.food_item?.base_price || 0;
         const quantity = item.quantity;
 
-        // Variant, Modifier, Topup Total Add-on Prices
         const variantTotal = (item.varient || []).reduce((sum, v) => sum + (v.price || 0), 0);
         const modifierTotal = (item.modifier || []).reduce((sum, m) => sum + (m.price || 0), 0);
         const topupTotal = (item.topup || []).reduce((sum, t) => sum + (t.price || 0), 0);
 
-        // Discount
         const discountPercent = item.discount?.isEnable ? item.discount.percentage || 0 : 0;
         const discountAmount = ((basePrice + variantTotal + modifierTotal + topupTotal) * discountPercent) / 100;
 
-        // Final Price Per Quantity
         const finalUnitPrice = basePrice + variantTotal + modifierTotal + topupTotal - discountAmount;
-        const totalPrice = finalUnitPrice * quantity+ tip_amount;
+        const totalPrice = finalUnitPrice * quantity;
 
-        // Push detailed bill item
         items.push({
           food_item: item.food_item.name,
           quantity,
@@ -632,30 +613,32 @@ const getTableBill = async (req, res) => {
       });
 
       total_vat += order.vat || 0;
-      total_amount += order.total_amount || (total_sub_total + total_vat);
     });
 
-
+    // Final total includes summed tip
+    total_amount = total_sub_total + total_vat + total_tip_amount;
 
     res.status(200).json({
       success: true,
-      message: "Order status updated successfully",
+      message: "Order fetched successfully",
       items,
       order_id,
       summary: {
         total_items,
+        tip_amount: total_tip_amount,
         sub_total: +total_sub_total.toFixed(2),
         vat: +total_vat.toFixed(2),
         total_amount: +total_amount.toFixed(2),
-        vatPercentage: orders[0].vatPercentage || 0,
-      }
-
+        vatPercentage: orders[0]?.vatPercentage || 0,
+      },
     });
   } catch (err) {
-    console.error("updateOrderStatus error:", err);
+    console.error("getTableBill error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
 const updatePaymentStatus = async (req, res) => {
   try {
     const { table_no, order_id, status, payment_type } = req.body;
