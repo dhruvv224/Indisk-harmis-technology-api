@@ -557,10 +557,16 @@ const getTableBill = async (req, res) => {
     let query = {};
 
     if (table_no === "Take away order") {
-      if (!order_id) return res.status(400).json({ success: false, message: "order_id is required" });
+      if (!order_id)
+        return res
+          .status(400)
+          .json({ success: false, message: "order_id is required" });
       query._id = order_id;
     } else {
-      if (!table_no) return res.status(400).json({ success: false, message: "table_no is required" });
+      if (!table_no)
+        return res
+          .status(400)
+          .json({ success: false, message: "table_no is required" });
       query = { table_no, payment_status: { $ne: "paid" } };
     }
 
@@ -569,31 +575,48 @@ const getTableBill = async (req, res) => {
       select: "name base_price",
     });
 
-    if (!orders || orders.length === 0) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!orders || orders.length === 0)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     let items = [];
     let total_items = 0;
     let total_sub_total = 0;
     let total_vat = 0;
-    let total_amount = 0;
-    let total_tip_amount = 0; // sum of tip_amounts across orders
+    let total_tip_amount = 0;
 
     orders.forEach((order) => {
       order_id = order._id;
-      total_tip_amount += order.tip_amount || 0; // sum tip for all orders
+      total_tip_amount += order.tip_amount || 0; // sum all tips, but add only once later
 
       order.items.forEach((item) => {
         const basePrice = item.food_item?.base_price || 0;
         const quantity = item.quantity;
 
-        const variantTotal = (item.varient || []).reduce((sum, v) => sum + (v.price || 0), 0);
-        const modifierTotal = (item.modifier || []).reduce((sum, m) => sum + (m.price || 0), 0);
-        const topupTotal = (item.topup || []).reduce((sum, t) => sum + (t.price || 0), 0);
+        const variantTotal = (item.varient || []).reduce(
+          (sum, v) => sum + (v.price || 0),
+          0
+        );
+        const modifierTotal = (item.modifier || []).reduce(
+          (sum, m) => sum + (m.price || 0),
+          0
+        );
+        const topupTotal = (item.topup || []).reduce(
+          (sum, t) => sum + (t.price || 0),
+          0
+        );
 
-        const discountPercent = item.discount?.isEnable ? item.discount.percentage || 0 : 0;
-        const discountAmount = ((basePrice + variantTotal + modifierTotal + topupTotal) * discountPercent) / 100;
+        const discountPercent = item.discount?.isEnable
+          ? item.discount.percentage || 0
+          : 0;
+        const discountAmount =
+          ((basePrice + variantTotal + modifierTotal + topupTotal) *
+            discountPercent) /
+          100;
 
-        const finalUnitPrice = basePrice + variantTotal + modifierTotal + topupTotal - discountAmount;
+        const finalUnitPrice =
+          basePrice + variantTotal + modifierTotal + topupTotal - discountAmount;
         const totalPrice = finalUnitPrice * quantity;
 
         items.push({
@@ -615,8 +638,8 @@ const getTableBill = async (req, res) => {
       total_vat += order.vat || 0;
     });
 
-    // Final total includes summed tip
-    total_amount = total_sub_total + total_vat + total_tip_amount;
+    // ✅ Tip added only once in final total
+    const total_amount = total_sub_total + total_vat + total_tip_amount;
 
     res.status(200).json({
       success: true,
@@ -625,9 +648,9 @@ const getTableBill = async (req, res) => {
       order_id,
       summary: {
         total_items,
-        tip_amount: total_tip_amount,
         sub_total: +total_sub_total.toFixed(2),
         vat: +total_vat.toFixed(2),
+        tip_amount: +total_tip_amount.toFixed(2),
         total_amount: +total_amount.toFixed(2),
         vatPercentage: orders[0]?.vatPercentage || 0,
       },
@@ -637,6 +660,7 @@ const getTableBill = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 
 const updatePaymentStatus = async (req, res) => {
